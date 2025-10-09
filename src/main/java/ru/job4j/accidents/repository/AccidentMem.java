@@ -26,4 +26,11 @@ public class AccidentMem {
     public Iterable<Accident> findAll() {
         return accidents.values();
     }
+
+    public void save(Accident accident) {
+        if (accident.getId() == 0) {
+            accident.setId(nextId.getAndIncrement());
+        }
+        accidents.put(accident.getId(), accident);
+    }
 }

@@ -5,7 +5,6 @@ import ru.job4j.accidents.model.Accident;
 import ru.job4j.accidents.repository.AccidentMem;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -18,6 +17,12 @@ public class AccidentService {
     }
 
     public List<Accident> findAll() {
-        return new ArrayList<>((Collection<Accident>) accidentMem.findAll());
+        List<Accident> result = new ArrayList<>();
+        accidentMem.findAll().forEach(result::add);
+        return result;
+    }
+
+    public void create(Accident accident) {
+        accidentMem.save(accident);
     }
 }
