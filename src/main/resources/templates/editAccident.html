@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>Редактирование инцидента</title>
+</head>
+<body>
+<div class="container">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" th:href="@{/}">Главная</a>
+                <a class="nav-item nav-link" th:href="@{/index}">Инциденты</a>
+                <a class="nav-item nav-link active" th:href="@{/createAccident}">Добавить инцидент</a>
+            </div>
+        </div>
+    </nav>
+    <div class="row pt-3">
+        <div class="card" style="width: 100%">
+            <div class="card-header">
+                Редактирование инцидента
+            </div>
+            <div class="card-body">
+                <form th:action="@{/editAccident}" method="POST" th:object="${accident}">
+                    <input type="hidden" th:field="*{id}"/>
+
+                    <div class="form-group">
+                        <label for="name">Название</label>
+                        <input type="text" class="form-control" th:field="*{name}" id="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="text">Описание</label>
+                        <textarea class="form-control" th:field="*{text}" id="text" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Адрес</label>
+                        <input type="text" class="form-control" th:field="*{address}" id="address" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-3">Сохранить</button>
+                </form>
+                <!-- Сообщение об ошибке -->
+                <div th:if="${message}" class="alert alert-danger mt-3" role="alert">
+                    <span th:text="${message}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
