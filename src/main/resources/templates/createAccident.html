@@ -27,6 +27,7 @@
             <input type="text" class="form-control" th:field="*{address}" id="address" required>
         </div>
 
+        <!-- Тип инцидента -->
         <div class="mb-3">
             <label for="type.id" class="form-label">Тип инцидента</label>
             <select class="form-control" th:field="*{type.id}" id="type.id" required>
@@ -36,6 +37,18 @@
                         th:text="${type.name}">
                 </option>
             </select>
+        </div>
+
+        <!-- Статьи нарушений (множественный выбор) -->
+        <div class="mb-3">
+            <label for="rIds" class="form-label">Статья нарушения</label>
+            <select class="form-control" id="rIds" name="rIds" multiple size="4" required>
+                <option th:each="rule : ${rules}"
+                        th:value="${rule.id}"
+                        th:text="${rule.name}">
+                </option>
+            </select>
+            <small class="form-text text-muted">Удерживайте Ctrl (или Cmd на Mac) для выбора нескольких статей.</small>
         </div>
 
         <button type="submit" class="btn btn-primary">Сохранить</button>
