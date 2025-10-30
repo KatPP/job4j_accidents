@@ -3,22 +3,28 @@ package ru.job4j.accidents.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import ru.job4j.accidents.model.Accident;
+import ru.job4j.accidents.model.AccidentType;
 import ru.job4j.accidents.service.AccidentService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
 @AllArgsConstructor
 public class AccidentController {
+
     private final AccidentService accidentService;
 
     @GetMapping("/createAccident")
-    public String viewCreateAccident() {
+    public String viewCreateAccident(Model model) {
+        model.addAttribute("accident", new Accident());
+        model.addAttribute("types", List.of(
+                new AccidentType(1, "Две машины"),
+                new AccidentType(2, "Машина и человек"),
+                new AccidentType(3, "Машина и велосипед")
+        ));
         return "createAccident";
     }
 
@@ -30,9 +36,15 @@ public class AccidentController {
 
     @GetMapping("/formUpdateAccident")
     public String edit(@RequestParam("id") int id, Model model) {
-        Optional<Accident> accident = accidentService.getById(id);
-        if (accident.isPresent()) {
-            model.addAttribute("accident", accident.get());
+        Optional<Accident> accidentOpt = accidentService.getById(id);
+        if (accidentOpt.isPresent()) {
+            Accident accident = accidentOpt.get();
+            model.addAttribute("accident", accident);
+            model.addAttribute("types", List.of(
+                    new AccidentType(1, "Две машины"),
+                    new AccidentType(2, "Машина и человек"),
+                    new AccidentType(3, "Машина и велосипед")
+            ));
             return "editAccident";
         }
         model.addAttribute("message", "Инцидент не найден");
@@ -40,12 +52,8 @@ public class AccidentController {
     }
 
     @PostMapping("/editAccident")
-    public String update(@ModelAttribute Accident accident, Model model) {
-        if (accidentService.update(accident)) {
-            return "redirect:/index";
-        }
-        model.addAttribute("message", "Ошибка при обновлении");
-        model.addAttribute("accident", accident);
-        return "editAccident";
+    public String update(@ModelAttribute Accident accident) {
+        accidentService.update(accident);
+        return "redirect:/index";
     }
 }
