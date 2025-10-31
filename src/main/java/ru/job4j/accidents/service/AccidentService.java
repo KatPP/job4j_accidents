@@ -1,37 +1,34 @@
+// src/main/java/ru/job4j/accidents/service/AccidentService.java
+
 package ru.job4j.accidents.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.job4j.accidents.model.Accident;
-import ru.job4j.accidents.repository.AccidentMem;
+import ru.job4j.accidents.repository.AccidentJdbcTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class AccidentService {
 
-    private final AccidentMem accidentMem;
-
-    public AccidentService(AccidentMem accidentMem) {
-        this.accidentMem = accidentMem;
-    }
-
-    public List<Accident> findAll() {
-        List<Accident> result = new ArrayList<>();
-        accidentMem.findAll().forEach(result::add);
-        return result;
-    }
+    private final AccidentJdbcTemplate accidentJdbc;
 
     public void create(Accident accident) {
-        accidentMem.save(accident);
+        accidentJdbc.save(accident);
     }
 
     public boolean update(Accident accident) {
-        return accidentMem.update(accident);
+        return accidentJdbc.update(accident);
     }
 
     public Optional<Accident> getById(int id) {
-        return accidentMem.findById(id);
+        return accidentJdbc.findById(id);
+    }
+
+    public List<Accident> findAll() {
+        return accidentJdbc.findAll();
     }
 }

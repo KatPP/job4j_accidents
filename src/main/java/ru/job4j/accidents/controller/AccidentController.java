@@ -5,13 +5,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.accidents.model.Accident;
-import ru.job4j.accidents.model.Rule;
 import ru.job4j.accidents.service.AccidentService;
 import ru.job4j.accidents.service.AccidentTypeService;
 import ru.job4j.accidents.service.RuleService;
 
 import jakarta.servlet.http.HttpServletRequest;
-
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
@@ -25,6 +23,12 @@ public class AccidentController {
     private final AccidentTypeService accidentTypeService;
     private final RuleService ruleService;
 
+    @GetMapping({"/", "/index"})
+    public String index(Model model) {
+        model.addAttribute("accidents", accidentService.findAll());
+        return "index";
+    }
+
     @GetMapping("/createAccident")
     public String viewCreateAccident(Model model) {
         model.addAttribute("accident", new Accident());
@@ -37,9 +41,10 @@ public class AccidentController {
     public String save(@ModelAttribute Accident accident, HttpServletRequest req) {
         String[] rIds = req.getParameterValues("rIds");
         if (rIds != null) {
-            Set<Rule> rules = Arrays.stream(rIds)
+            Set<ru.job4j.accidents.model.Rule> rules = Arrays.stream(rIds)
                     .map(Integer::parseInt)
-                    .map(id -> ruleService.getById(id).orElse(new Rule(id, "")))
+                    .map(id -> ruleService.getById(id)
+                            .orElseThrow(() -> new RuntimeException("Статья с ID " + id + " не найдена")))
                     .collect(Collectors.toSet());
             accident.setRules(rules);
         }
@@ -51,8 +56,7 @@ public class AccidentController {
     public String edit(@RequestParam("id") int id, Model model) {
         Optional<Accident> accidentOpt = accidentService.getById(id);
         if (accidentOpt.isPresent()) {
-            Accident accident = accidentOpt.get();
-            model.addAttribute("accident", accident);
+            model.addAttribute("accident", accidentOpt.get());
             model.addAttribute("types", accidentTypeService.findAll());
             model.addAttribute("rules", ruleService.findAll());
             return "editAccident";
