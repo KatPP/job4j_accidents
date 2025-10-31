@@ -3,8 +3,9 @@ package ru.job4j.accidents.repository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 import ru.job4j.accidents.model.Accident;
-import ru.job4j.accidents.model.AccidentType;
 import ru.job4j.accidents.model.Rule;
+import ru.job4j.accidents.service.AccidentTypeService;
+import ru.job4j.accidents.service.RuleService;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,31 +18,35 @@ public class AccidentMem {
     private final Map<Integer, Accident> accidents = new ConcurrentHashMap<>();
     private final AtomicInteger nextId = new AtomicInteger(1);
 
-    private static final Map<Integer, AccidentType> TYPES = Map.of(
-            1, new AccidentType(1, "Две машины"),
-            2, new AccidentType(2, "Машина и человек"),
-            3, new AccidentType(3, "Машина и велосипед")
-    );
+    private final AccidentTypeService accidentTypeService;
+    private final RuleService ruleService;
 
-    private static final Map<Integer, Rule> RULES = Map.of(
-            1, new Rule(1, "Статья. 1"),
-            2, new Rule(2, "Статья. 2"),
-            3, new Rule(3, "Статья. 3")
-    );
+    public AccidentMem(AccidentTypeService accidentTypeService, RuleService ruleService) {
+        this.accidentTypeService = accidentTypeService;
+        this.ruleService = ruleService;
+    }
 
     @PostConstruct
     public void init() {
-        // Тестовые данные с типами и статьями
-        Set<Rule> rules1 = Set.of(RULES.get(1), RULES.get(2));
-        Set<Rule> rules2 = Set.of(RULES.get(2));
-        Set<Rule> rules3 = Set.of(RULES.get(3));
+        // Получаем типы и статьи через сервисы
+        var type1 = accidentTypeService.getById(1).orElseThrow();
+        var type2 = accidentTypeService.getById(2).orElseThrow();
+        var type3 = accidentTypeService.getById(3).orElseThrow();
+
+        var rule1 = ruleService.getById(1).orElseThrow();
+        var rule2 = ruleService.getById(2).orElseThrow();
+        var rule3 = ruleService.getById(3).orElseThrow();
+
+        Set<Rule> rules1 = Set.of(rule1, rule2);
+        Set<Rule> rules2 = Set.of(rule2);
+        Set<Rule> rules3 = Set.of(rule3);
 
         accidents.put(nextId.getAndIncrement(),
-                new Accident(1, "ДТП на перекрёстке", "Столкновение", "ул. Ленина, 10", TYPES.get(1), rules1));
+                new Accident(1, "ДТП на перекрёстке", "Столкновение", "ул. Ленина, 10", type1, rules1));
         accidents.put(nextId.getAndIncrement(),
-                new Accident(2, "Наезд на пешехода", "Пешеход в больнице", "пр. Мира, 25", TYPES.get(2), rules2));
+                new Accident(2, "Наезд на пешехода", "Пешеход в больнице", "пр. Мира, 25", type2, rules2));
         accidents.put(nextId.getAndIncrement(),
-                new Accident(3, "Велосипедист упал", "Без пострадавших", "ул. Советская, 5", TYPES.get(3), rules3));
+                new Accident(3, "Велосипедист упал", "Без пострадавших", "ул. Советская, 5", type3, rules3));
     }
 
     public Iterable<Accident> findAll() {
@@ -70,10 +75,8 @@ public class AccidentMem {
 
     private void restoreFullType(Accident accident) {
         if (accident.getType() != null && accident.getType().getId() != null) {
-            AccidentType fullType = TYPES.get(accident.getType().getId());
-            if (fullType != null) {
-                accident.setType(fullType);
-            }
+            accidentTypeService.getById(accident.getType().getId())
+                    .ifPresent(accident::setType);
         }
     }
 
@@ -81,7 +84,7 @@ public class AccidentMem {
         if (accident.getRules() != null) {
             Set<Rule> fullRules = accident.getRules().stream()
                     .filter(rule -> rule.getId() != 0)
-                    .map(rule -> RULES.get(rule.getId()))
+                    .map(rule -> ruleService.getById(rule.getId()).orElse(null))
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
             accident.setRules(fullRules);
