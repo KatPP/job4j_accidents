@@ -5,14 +5,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.accidents.model.Accident;
+import ru.job4j.accidents.model.Rule;
 import ru.job4j.accidents.service.AccidentService;
 import ru.job4j.accidents.service.AccidentTypeService;
 import ru.job4j.accidents.service.RuleService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -41,12 +40,21 @@ public class AccidentController {
     public String save(@ModelAttribute Accident accident, HttpServletRequest req) {
         String[] rIds = req.getParameterValues("rIds");
         if (rIds != null) {
-            Set<ru.job4j.accidents.model.Rule> rules = Arrays.stream(rIds)
+            Set<Integer> ruleIds = Arrays.stream(rIds)
                     .map(Integer::parseInt)
-                    .map(id -> ruleService.getById(id)
-                            .orElseThrow(() -> new RuntimeException("Статья с ID " + id + " не найдена")))
                     .collect(Collectors.toSet());
-            accident.setRules(rules);
+
+            List<Rule> allRules = ruleService.findByIds(ruleIds);
+
+            if (allRules.size() != ruleIds.size()) {
+                Set<Integer> foundIds = allRules.stream().map(Rule::getId).collect(Collectors.toSet());
+                Set<Integer> missingIds = ruleIds.stream()
+                        .filter(id -> !foundIds.contains(id))
+                        .collect(Collectors.toSet());
+                throw new RuntimeException("Не найдены статьи с ID: " + missingIds);
+            }
+
+            accident.setRules(new HashSet<>(allRules));
         }
         accidentService.create(accident);
         return "redirect:/index";

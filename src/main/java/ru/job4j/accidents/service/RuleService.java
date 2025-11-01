@@ -1,5 +1,3 @@
-// src/main/java/ru/job4j/accidents/service/RuleService.java
-
 package ru.job4j.accidents.service;
 
 import lombok.RequiredArgsConstructor;
@@ -7,8 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.job4j.accidents.model.Rule;
 import ru.job4j.accidents.repository.RuleRepository;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -25,5 +22,9 @@ public class RuleService {
 
     public Optional<Rule> getById(int id) {
         return ruleRepository.findById(id);
+    }
+
+    public List<Rule> findByIds(Set<Integer> ids) {
+        return ruleRepository.findByIds(ids);
     }
 }

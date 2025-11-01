@@ -3,10 +3,10 @@ package ru.job4j.accidents.repository;
 import org.springframework.stereotype.Repository;
 import ru.job4j.accidents.model.Rule;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Repository
 public class RuleRepository {
@@ -30,5 +30,15 @@ public class RuleRepository {
 
     public Optional<Rule> findById(int id) {
         return Optional.ofNullable(rules.get(id));
+    }
+
+    public List<Rule> findByIds(Set<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return ids.stream()
+                .map(rules::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }
