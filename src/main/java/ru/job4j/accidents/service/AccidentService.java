@@ -1,34 +1,32 @@
-// src/main/java/ru/job4j/accidents/service/AccidentService.java
-
 package ru.job4j.accidents.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.job4j.accidents.model.Accident;
-import ru.job4j.accidents.repository.AccidentJdbcTemplate;
+import ru.job4j.accidents.repository.AccidentJdbcRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AccidentService {
 
-    private final AccidentJdbcTemplate accidentJdbc;
+    private final AccidentJdbcRepository accidentRepository;
 
     public void create(Accident accident) {
-        accidentJdbc.save(accident);
+        accidentRepository.save(accident);
     }
 
     public boolean update(Accident accident) {
-        return accidentJdbc.update(accident);
+        return accidentRepository.update(accident);
     }
 
     public Optional<Accident> getById(int id) {
-        return accidentJdbc.findById(id);
+        return accidentRepository.findById(id);
     }
 
     public List<Accident> findAll() {
-        return accidentJdbc.findAll();
+        return accidentRepository.findAll();
     }
 }

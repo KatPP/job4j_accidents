@@ -3,21 +3,20 @@ package ru.job4j.accidents.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.job4j.accidents.model.Rule;
-import ru.job4j.accidents.repository.RuleRepository;
+import ru.job4j.accidents.repository.RuleJdbcRepository;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class RuleService {
 
-    private final RuleRepository ruleRepository;
+    private final RuleJdbcRepository ruleRepository;
 
     public List<Rule> findAll() {
-        return StreamSupport.stream(ruleRepository.findAll().spliterator(), false)
-                .collect(Collectors.toList());
+        return ruleRepository.findAll();
     }
 
     public Optional<Rule> getById(int id) {

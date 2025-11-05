@@ -6,19 +6,17 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.job4j.accidents.model.Accident;
 import ru.job4j.accidents.model.Rule;
-import ru.job4j.accidents.service.AccidentTypeService;
-import ru.job4j.accidents.service.RuleService;
 
 import java.sql.PreparedStatement;
 import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
-public class AccidentJdbcTemplate {
+public class AccidentJdbcRepository {
 
     private final JdbcTemplate jdbc;
-    private final AccidentTypeService accidentTypeService;
-    private final RuleService ruleService;
+    private final AccidentTypeJdbcRepository typeRepository;
+    private final RuleJdbcRepository ruleRepository;
 
     public Accident save(Accident accident) {
         var keyHolder = new GeneratedKeyHolder();
@@ -38,12 +36,10 @@ public class AccidentJdbcTemplate {
         accident.setId(id);
 
         // Сохраняем связи со статьями
-        if (accident.getRules() != null) {
+        if (accident.getRules() != null && !accident.getRules().isEmpty()) {
+            String sql = "INSERT INTO accident_rule (accident_id, rule_id) VALUES (?, ?)";
             for (Rule rule : accident.getRules()) {
-                jdbc.update(
-                        "INSERT INTO accident_rule (accident_id, rule_id) VALUES (?, ?)",
-                        id, rule.getId()
-                );
+                jdbc.update(sql, id, rule.getId());
             }
         }
 
@@ -51,6 +47,7 @@ public class AccidentJdbcTemplate {
     }
 
     public boolean update(Accident accident) {
+        // Удаляем старые связи
         jdbc.update("DELETE FROM accident_rule WHERE accident_id = ?", accident.getId());
 
         int updated = jdbc.update(
@@ -62,12 +59,10 @@ public class AccidentJdbcTemplate {
                 accident.getId()
         );
 
-        if (accident.getRules() != null) {
+        if (accident.getRules() != null && !accident.getRules().isEmpty()) {
+            String sql = "INSERT INTO accident_rule (accident_id, rule_id) VALUES (?, ?)";
             for (Rule rule : accident.getRules()) {
-                jdbc.update(
-                        "INSERT INTO accident_rule (accident_id, rule_id) VALUES (?, ?)",
-                        accident.getId(), rule.getId()
-                );
+                jdbc.update(sql, accident.getId(), rule.getId());
             }
         }
 
@@ -86,20 +81,14 @@ public class AccidentJdbcTemplate {
 
                     int typeId = rs.getInt("type_id");
                     if (typeId != 0) {
-                        a.setType(accidentTypeService.getById(typeId).orElse(null));
+                        a.setType(typeRepository.findById(typeId).orElse(null));
                     }
 
-                    // Загружаем статьи
                     List<Rule> rules = jdbc.query(
                             "SELECT r.id, r.name FROM accident_rule ar "
                                     + "JOIN rules r ON ar.rule_id = r.id "
                                     + "WHERE ar.accident_id = ?",
-                            (rs2, rowNum2) -> {
-                                Rule rule = new Rule();
-                                rule.setId(rs2.getInt("id"));
-                                rule.setName(rs2.getString("name"));
-                                return rule;
-                            },
+                            (rs2, rowNum2) -> new Rule(rs2.getInt("id"), rs2.getString("name")),
                             a.getId()
                     );
                     a.setRules(new HashSet<>(rules));
@@ -123,19 +112,14 @@ public class AccidentJdbcTemplate {
 
                     int typeId = rs.getInt("type_id");
                     if (typeId != 0) {
-                        a.setType(accidentTypeService.getById(typeId).orElse(null));
+                        a.setType(typeRepository.findById(typeId).orElse(null));
                     }
 
                     List<Rule> rules = jdbc.query(
                             "SELECT r.id, r.name FROM accident_rule ar "
                                     + "JOIN rules r ON ar.rule_id = r.id "
                                     + "WHERE ar.accident_id = ?",
-                            (rs2, rowNum2) -> {
-                                Rule rule = new Rule();
-                                rule.setId(rs2.getInt("id"));
-                                rule.setName(rs2.getString("name"));
-                                return rule;
-                            },
+                            (rs2, rowNum2) -> new Rule(rs2.getInt("id"), rs2.getString("name")),
                             a.getId()
                     );
                     a.setRules(new HashSet<>(rules));
