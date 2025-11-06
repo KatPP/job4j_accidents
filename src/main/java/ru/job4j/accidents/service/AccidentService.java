@@ -2,8 +2,9 @@ package ru.job4j.accidents.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.job4j.accidents.model.Accident;
-import ru.job4j.accidents.repository.AccidentJdbcRepository;
+import ru.job4j.accidents.repository.AccidentHibernate;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,21 +13,25 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AccidentService {
 
-    private final AccidentJdbcRepository accidentRepository;
+    private final AccidentHibernate accidentHibernate;
 
+    @Transactional
     public void create(Accident accident) {
-        accidentRepository.save(accident);
+        accidentHibernate.create(accident);
     }
 
+    @Transactional
     public boolean update(Accident accident) {
-        return accidentRepository.update(accident);
+        return accidentHibernate.update(accident);
     }
 
+    @Transactional(readOnly = true)
     public Optional<Accident> getById(int id) {
-        return accidentRepository.findById(id);
+        return accidentHibernate.findById(id);
     }
 
+    @Transactional(readOnly = true)
     public List<Accident> findAll() {
-        return accidentRepository.findAll();
+        return accidentHibernate.findAll();
     }
 }
