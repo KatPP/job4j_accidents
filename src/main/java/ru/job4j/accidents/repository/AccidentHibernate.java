@@ -16,24 +16,36 @@ public class AccidentHibernate {
 
     public Accident create(Accident accident) {
         var session = sf.getCurrentSession();
+        session.doWork(connection -> {
+            // Можно добавить логику, если нужно
+        });
         session.save(accident);
         return accident;
     }
 
     public boolean update(Accident accident) {
         var session = sf.getCurrentSession();
+        session.doWork(connection -> {
+            // Можно добавить логику, если нужно
+        });
         session.update(accident);
         return true;
     }
 
     public Optional<Accident> findById(int id) {
         var session = sf.getCurrentSession();
-        Accident accident = session.get(Accident.class, id);
-        return Optional.ofNullable(accident);
+        return Optional.ofNullable(session.createQuery(
+                        "SELECT a FROM Accident a JOIN FETCH a.type JOIN FETCH a.rules WHERE a.id = :id",
+                        Accident.class)
+                .setParameter("id", id)
+                .uniqueResult());
     }
 
     public List<Accident> findAll() {
         var session = sf.getCurrentSession();
-        return session.createQuery("FROM Accident a JOIN FETCH a.type JOIN FETCH a.rules", Accident.class).list();
+        return session.createQuery(
+                        "SELECT a FROM Accident a JOIN FETCH a.type JOIN FETCH a.rules",
+                        Accident.class)
+                .list();
     }
 }

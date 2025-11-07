@@ -22,8 +22,7 @@ public class RuleHibernate {
 
     public Optional<Rule> findById(int id) {
         var session = sf.getCurrentSession();
-        Rule rule = session.get(Rule.class, id);
-        return Optional.ofNullable(rule);
+        return Optional.ofNullable(session.get(Rule.class, id));
     }
 
     public List<Rule> findByIds(Set<Integer> ids) {

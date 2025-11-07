@@ -21,7 +21,6 @@ public class AccidentTypeHibernate {
 
     public Optional<AccidentType> findById(int id) {
         var session = sf.getCurrentSession();
-        AccidentType type = session.get(AccidentType.class, id);
-        return Optional.ofNullable(type);
+        return Optional.ofNullable(session.get(AccidentType.class, id));
     }
 }
